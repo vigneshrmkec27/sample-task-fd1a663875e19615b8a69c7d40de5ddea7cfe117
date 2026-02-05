@@ -6,7 +6,7 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, showNotification }) => {
     const [formData, setFormData] = useState({
         username: '',
         email: '',
-        password: ''
+        password: '',
     });
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -32,7 +32,9 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, showNotification }) => {
 
     /* ------------------ VALIDITY TONE ------------------ */
     const validityTone = useMemo(() => {
-        if (!formData.username && !formData.email && !formData.password) return 'neutral';
+        if (!formData.username && !formData.email && !formData.password)
+            return 'neutral';
+
         if (
             formData.username &&
             /\S+@\S+\.\S+/.test(formData.email) &&
@@ -121,15 +123,19 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, showNotification }) => {
     };
 
     /* ------------------ PASSWORD STRENGTH ------------------ */
-    const passwordScore = Math.min(100, (formData.password.length / 12) * 100);
+    const passwordScore = Math.min(
+        100,
+        (formData.password.length / 12) * 100
+    );
+
     const passwordLabel =
         formData.password.length === 0
             ? 'Enter a password'
             : formData.password.length < 6
-                ? 'Weak'
-                : formData.password.length < 10
-                    ? 'Good'
-                    : 'Strong';
+            ? 'Weak'
+            : formData.password.length < 10
+            ? 'Good'
+            : 'Strong';
 
     return (
         <div
@@ -151,7 +157,11 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, showNotification }) => {
 
             {/* REGISTER CARD */}
             <div className="auth-surface w-full flex items-center justify-center px-8 sm:px-10">
-                <div className={`auth-card w-full max-w-md ${formError ? 'shake-error' : ''}`}>
+                <div
+                    className={`auth-card w-full max-w-md ${
+                        formError ? 'shake-error' : ''
+                    }`}
+                >
                     <div className="mb-8">
                         <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-1 text-xs uppercase tracking-widest text-sky-200">
                             Create Access
@@ -174,7 +184,10 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, showNotification }) => {
                                 placeholder=" "
                                 value={formData.username}
                                 onChange={(e) =>
-                                    setFormData({ ...formData, username: e.target.value })
+                                    setFormData({
+                                        ...formData,
+                                        username: e.target.value,
+                                    })
                                 }
                                 disabled={loading}
                                 className="floating-input floating-input--dark"
@@ -195,7 +208,10 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, showNotification }) => {
                                 placeholder=" "
                                 value={formData.email}
                                 onChange={(e) =>
-                                    setFormData({ ...formData, email: e.target.value })
+                                    setFormData({
+                                        ...formData,
+                                        email: e.target.value,
+                                    })
                                 }
                                 disabled={loading}
                                 className="floating-input floating-input--dark"
@@ -217,7 +233,10 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, showNotification }) => {
                                     placeholder=" "
                                     value={formData.password}
                                     onChange={(e) =>
-                                        setFormData({ ...formData, password: e.target.value })
+                                        setFormData({
+                                            ...formData,
+                                            password: e.target.value,
+                                        })
                                     }
                                     disabled={loading}
                                     className="floating-input floating-input--dark pr-16"
@@ -232,11 +251,17 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, showNotification }) => {
 
                             <button
                                 type="button"
-                                onClick={() => setShowPassword(!showPassword)}
+                                onClick={() =>
+                                    setShowPassword(!showPassword)
+                                }
                                 className="absolute right-6 top-1/2 -translate-y-1/2 text-white/60 hover:text-white"
                                 tabIndex={-1}
                             >
-                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                {showPassword ? (
+                                    <EyeOff size={20} />
+                                ) : (
+                                    <Eye size={20} />
+                                )}
                             </button>
                         </div>
 
@@ -244,7 +269,9 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, showNotification }) => {
                         <div className="password-meter">
                             <div className="flex justify-between text-xs text-slate-200 mb-2">
                                 <span>Password strength</span>
-                                <span className="font-semibold">{passwordLabel}</span>
+                                <span className="font-semibold">
+                                    {passwordLabel}
+                                </span>
                             </div>
                             <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
                                 <div
@@ -254,6 +281,7 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, showNotification }) => {
                             </div>
                         </div>
 
+                        {/* Submit */}
                         <button
                             ref={buttonRef}
                             onMouseMove={handleMagneticMove}
@@ -262,10 +290,15 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, showNotification }) => {
                             disabled={loading}
                             className="magnetic-button w-full py-4 rounded-full font-semibold shadow-lg disabled:opacity-50"
                             style={{
-                                background: 'linear-gradient(120deg, #38bdf8, #6366f1)',
+                                background:
+                                    'linear-gradient(120deg, #38bdf8, #6366f1)',
                             }}
                         >
-                            {loading ? 'Creating account…' : showSuccess ? 'Success!' : 'Create account'}
+                            {loading
+                                ? 'Creating account…'
+                                : showSuccess
+                                ? 'Success!'
+                                : 'Create account'}
                         </button>
                     </form>
 

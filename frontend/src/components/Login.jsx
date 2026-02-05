@@ -81,7 +81,10 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, showNotification }) => {
             showNotification('Login successful!');
             onLoginSuccess(response);
         } catch (error) {
-            showNotification(error.response?.data || 'Invalid credentials', 'error');
+            showNotification(
+                error.response?.data || 'Invalid credentials',
+                'error'
+            );
             triggerErrorAnimation();
         } finally {
             setLoading(false);

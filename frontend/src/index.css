@@ -203,7 +203,6 @@ body {
 }
 
 .auth-card {
-    position: relative;
     background: rgba(2,6,23,.82);
     border-radius: 28px;
     padding: 2.5rem;
