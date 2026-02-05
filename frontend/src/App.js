@@ -55,6 +55,8 @@ function App() {
         setCurrentView('login');
     };
 
+    const isAuthView = currentView === 'login' || currentView === 'register';
+
     return (
         <div className="min-h-screen relative overflow-hidden">
             {/* Global Notification */}
@@ -68,22 +70,25 @@ function App() {
 
             {/* View Container */}
             <div className="min-h-screen transition-opacity duration-300 ease-in-out">
-                {currentView === 'login' && (
-                    <Login
-                        onLoginSuccess={handleLoginSuccess}
-                        onSwitchToRegister={() => setCurrentView('register')}
-                        darkMode={darkMode}
-                        showNotification={showNotification}
-                    />
-                )}
-
-                {currentView === 'register' && (
-                    <Register
-                        onRegisterSuccess={handleRegisterSuccess}
-                        onSwitchToLogin={() => setCurrentView('login')}
-                        darkMode={darkMode}
-                        showNotification={showNotification}
-                    />
+                {isAuthView && (
+                    <div className={`auth-shell ${currentView === 'register' ? 'is-register' : 'is-login'}`}>
+                        <div className="auth-panel auth-panel--login" aria-hidden={currentView !== 'login'}>
+                            <Login
+                                onLoginSuccess={handleLoginSuccess}
+                                onSwitchToRegister={() => setCurrentView('register')}
+                                darkMode={darkMode}
+                                showNotification={showNotification}
+                            />
+                        </div>
+                        <div className="auth-panel auth-panel--register" aria-hidden={currentView !== 'register'}>
+                            <Register
+                                onRegisterSuccess={handleRegisterSuccess}
+                                onSwitchToLogin={() => setCurrentView('login')}
+                                darkMode={darkMode}
+                                showNotification={showNotification}
+                            />
+                        </div>
+                    </div>
                 )}
 
                 {currentView === 'dashboard' && user && (
