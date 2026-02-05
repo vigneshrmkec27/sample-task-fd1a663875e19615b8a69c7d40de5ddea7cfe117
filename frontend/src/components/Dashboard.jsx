@@ -30,6 +30,7 @@ const Dashboard = ({ user, darkMode, setDarkMode, showNotification, onUserUpdate
     const [viewMode, setViewMode] = useState('list');
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [calendarMonth, setCalendarMonth] = useState(new Date());
+    const [animatedStats, setAnimatedStats] = useState({ total: 0, inProgress: 0, completed: 0 });
 
     const tasksPerPage = 9;
 
@@ -76,6 +77,38 @@ const Dashboard = ({ user, darkMode, setDarkMode, showNotification, onUserUpdate
         window.location.reload();
     };
 
+    const handleDownloadReport = () => {
+        if (!tasks.length) {
+            showNotification('No tasks available to download.', 'error');
+            return;
+        }
+
+        const header = ['Task Name', 'Description', 'Priority', 'Status', 'Due Date'];
+        const rows = tasks.map((task) => ([
+            task.taskName || '',
+            task.description || '',
+            task.priority || '',
+            task.status || '',
+            task.dueDate || ''
+        ]));
+
+        const escapeValue = (value) => `"${String(value).replace(/"/g, '""')}"`;
+        const csvContent = [header, ...rows]
+            .map((row) => row.map(escapeValue).join(','))
+            .join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `tasks-report-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showNotification('Report download started.');
+    };
+
     const openTaskModal = (task = null) => {
         setSelectedTask(task);
         setShowTaskModal(true);
@@ -115,18 +148,58 @@ const Dashboard = ({ user, darkMode, setDarkMode, showNotification, onUserUpdate
     const indexOfFirstTask = indexOfLastTask - tasksPerPage;
     const currentTasks = filteredTasks.slice(indexOfFirstTask, indexOfLastTask);
     const stats = getTaskStats(tasks);
+    const { total, inProgress, completed } = stats;
     const selectedDateKey = selectedDate.toISOString().split('T')[0];
     const tasksForSelectedDate = tasks.filter((task) => task.dueDate === selectedDateKey);
+    const totalTasksSafe = total || 1;
+    const statProgress = {
+        total: 100,
+        inProgress: Math.min(100, Math.round((inProgress / totalTasksSafe) * 100)),
+        completed: Math.min(100, Math.round((completed / totalTasksSafe) * 100))
+    };
+
+    useEffect(() => {
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (prefersReducedMotion) {
+            setAnimatedStats({ total, inProgress, completed });
+            return;
+        }
+
+        let frame;
+        const duration = 900;
+        const start = performance.now();
+        const from = { total: 0, inProgress: 0, completed: 0 };
+
+        const animate = (now) => {
+            const progress = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setAnimatedStats({
+                total: Math.round(from.total + (total - from.total) * eased),
+                inProgress: Math.round(from.inProgress + (inProgress - from.inProgress) * eased),
+                completed: Math.round(from.completed + (completed - from.completed) * eased)
+            });
+            if (progress < 1) {
+                frame = window.requestAnimationFrame(animate);
+            }
+        };
+
+        frame = window.requestAnimationFrame(animate);
+        return () => window.cancelAnimationFrame(frame);
+    }, [total, inProgress, completed]);
 
     return (
-        <div className={`min-h-screen transition-colors duration-300 ${
+        <div className={`dashboard-shell min-h-screen transition-colors duration-300 ${
             darkMode
                 ? 'dark bg-gradient-to-br from-[#0B0F19] via-[#111827] to-[#020617]'
                 : 'bg-gradient-to-br from-gray-50 via-white to-gray-100'
         }`}>
+            <div className="dashboard-background" aria-hidden="true">
+                <div className="dashboard-orb orb-left" />
+                <div className="dashboard-orb orb-right" />
+            </div>
 
             {/* HEADER */}
-            <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/80 dark:bg-black/40 border-b border-gray-200/50 dark:border-white/10">
+            <header className="dashboard-header sticky top-0 z-40 backdrop-blur-xl bg-white/80 dark:bg-black/40 border-b border-gray-200/50 dark:border-white/10">
                 <div className="max-w-7xl mx-auto px-6 py-5">
 
                     <div className="flex items-center justify-between gap-6">
@@ -218,6 +291,7 @@ const Dashboard = ({ user, darkMode, setDarkMode, showNotification, onUserUpdate
                         </button>
 
                         <button
+                            onClick={handleDownloadReport}
                             className="px-6 py-3 rounded-xl border border-gray-300 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10 transition flex items-center gap-2"
                         >
                             <Calendar className="w-5 h-5" /> Download Report
@@ -227,21 +301,28 @@ const Dashboard = ({ user, darkMode, setDarkMode, showNotification, onUserUpdate
             </header>
 
             {/* MAIN */}
-            <main className="max-w-7xl mx-auto px-6 py-12">
+            <main className="dashboard-main max-w-7xl mx-auto px-6 py-12">
                 <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                     {[
-                        { label: 'Total Tasks', value: stats.total, accent: 'from-indigo-500 to-purple-500' },
-                        { label: 'In Progress', value: stats.inProgress, accent: 'from-sky-500 to-indigo-500' },
-                        { label: 'Completed', value: stats.completed, accent: 'from-emerald-500 to-green-500' },
-                    ].map((card) => (
+                        { key: 'total', label: 'Total Tasks', value: animatedStats.total, accent: 'from-indigo-500 to-purple-500' },
+                        { key: 'inProgress', label: 'In Progress', value: animatedStats.inProgress, accent: 'from-sky-500 to-indigo-500' },
+                        { key: 'completed', label: 'Completed', value: animatedStats.completed, accent: 'from-emerald-500 to-green-500' },
+                    ].map((card, index) => (
                         <div
                             key={card.label}
-                            className="p-5 rounded-2xl border border-gray-200/70 dark:border-white/10 bg-white/80 dark:bg-gray-900/60 shadow-lg"
+                            className="dashboard-card p-5 rounded-2xl border border-gray-200/70 dark:border-white/10 bg-white/80 dark:bg-gray-900/60 shadow-lg"
+                            style={{ animationDelay: `${index * 120}ms` }}
                         >
                             <p className="text-sm text-gray-500 dark:text-gray-400">{card.label}</p>
                             <div className="mt-4 flex items-center justify-between">
                                 <span className="text-3xl font-semibold text-gray-900 dark:text-white">{card.value}</span>
                                 <div className={`h-10 w-10 rounded-full bg-gradient-to-br ${card.accent}`} />
+                            </div>
+                            <div className="mt-4 h-2 w-full rounded-full bg-gray-200/70 dark:bg-white/10 overflow-hidden">
+                                <div
+                                    className={`h-full rounded-full bg-gradient-to-r ${card.accent} stat-progress`}
+                                    style={{ width: `${statProgress[card.key]}%` }}
+                                />
                             </div>
                         </div>
                     ))}
@@ -259,7 +340,7 @@ const Dashboard = ({ user, darkMode, setDarkMode, showNotification, onUserUpdate
                             onClick={() => setViewMode('list')}
                             className={`px-4 py-2 rounded-xl border flex items-center gap-2 ${
                                 viewMode === 'list'
-                                    ? 'bg-indigo-600 text-white border-indigo-600'
+                                    ? 'bg-indigo-600 text-white border-indigo-600 active-glow'
                                     : 'border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10'
                             }`}
                         >
@@ -269,7 +350,7 @@ const Dashboard = ({ user, darkMode, setDarkMode, showNotification, onUserUpdate
                             onClick={() => setViewMode('calendar')}
                             className={`px-4 py-2 rounded-xl border flex items-center gap-2 ${
                                 viewMode === 'calendar'
-                                    ? 'bg-indigo-600 text-white border-indigo-600'
+                                    ? 'bg-indigo-600 text-white border-indigo-600 active-glow'
                                     : 'border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10'
                             }`}
                         >
@@ -286,12 +367,17 @@ const Dashboard = ({ user, darkMode, setDarkMode, showNotification, onUserUpdate
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
-                                {currentTasks.map(task => (
-                                    <TaskCard
+                                {currentTasks.map((task, index) => (
+                                    <div
                                         key={task.id}
-                                        task={task}
-                                        onClick={() => openDetailModal(task)}
-                                    />
+                                        className="dashboard-card"
+                                        style={{ animationDelay: `${index * 80}ms` }}
+                                    >
+                                        <TaskCard
+                                            task={task}
+                                            onClick={() => openDetailModal(task)}
+                                        />
+                                    </div>
                                 ))}
                             </div>
                         )}
