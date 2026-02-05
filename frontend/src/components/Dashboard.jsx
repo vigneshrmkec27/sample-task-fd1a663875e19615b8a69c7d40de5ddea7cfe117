@@ -77,6 +77,38 @@ const Dashboard = ({ user, darkMode, setDarkMode, showNotification, onUserUpdate
         window.location.reload();
     };
 
+    const handleDownloadReport = () => {
+        if (!tasks.length) {
+            showNotification('No tasks available to download.', 'error');
+            return;
+        }
+
+        const header = ['Task Name', 'Description', 'Priority', 'Status', 'Due Date'];
+        const rows = tasks.map((task) => ([
+            task.taskName || '',
+            task.description || '',
+            task.priority || '',
+            task.status || '',
+            task.dueDate || ''
+        ]));
+
+        const escapeValue = (value) => `"${String(value).replace(/"/g, '""')}"`;
+        const csvContent = [header, ...rows]
+            .map((row) => row.map(escapeValue).join(','))
+            .join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `tasks-report-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showNotification('Report download started.');
+    };
+
     const openTaskModal = (task = null) => {
         setSelectedTask(task);
         setShowTaskModal(true);
@@ -259,6 +291,7 @@ const Dashboard = ({ user, darkMode, setDarkMode, showNotification, onUserUpdate
                         </button>
 
                         <button
+                            onClick={handleDownloadReport}
                             className="px-6 py-3 rounded-xl border border-gray-300 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10 transition flex items-center gap-2"
                         >
                             <Calendar className="w-5 h-5" /> Download Report
