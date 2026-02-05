@@ -12,17 +12,18 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, darkMode, showNotificati
     const [showPassword, setShowPassword] = useState(false);
     const [formError, setFormError] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
+
     const containerRef = useRef(null);
     const buttonRef = useRef(null);
 
     const triggerErrorAnimation = () => {
         setFormError(true);
-        window.setTimeout(() => setFormError(false), 700);
+        setTimeout(() => setFormError(false), 700);
     };
 
     const triggerSuccessState = () => {
         setShowSuccess(true);
-        window.setTimeout(() => {
+        setTimeout(() => {
             setShowSuccess(false);
             onRegisterSuccess();
         }, 900);
@@ -30,18 +31,24 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, darkMode, showNotificati
 
     const validityTone = useMemo(() => {
         if (!formData.username && !formData.email && !formData.password) return 'neutral';
-        if (formData.username && /\S+@\S+\.\S+/.test(formData.email) && formData.password.length >= 6) {
+        if (
+            formData.username &&
+            /\S+@\S+\.\S+/.test(formData.email) &&
+            formData.password.length >= 6
+        ) {
             return 'valid';
         }
         return 'warn';
-    }, [formData.email, formData.password, formData.username]);
+    }, [formData]);
 
-    const handleParallax = (event) => {
+    const handleParallax = (e) => {
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         if (!containerRef.current) return;
+
         const rect = containerRef.current.getBoundingClientRect();
-        const x = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
-        const y = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
+        const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+        const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+
         containerRef.current.style.setProperty('--mx', x.toFixed(3));
         containerRef.current.style.setProperty('--my', y.toFixed(3));
     };
@@ -52,15 +59,16 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, darkMode, showNotificati
         containerRef.current.style.setProperty('--my', '0');
     };
 
-    const handleMagneticMove = (event) => {
+    const handleMagneticMove = (e) => {
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         if (!buttonRef.current) return;
+
         const rect = buttonRef.current.getBoundingClientRect();
-        const x = event.clientX - rect.left - rect.width / 2;
-        const y = event.clientY - rect.top - rect.height / 2;
-        const strength = 0.2;
-        buttonRef.current.style.setProperty('--btn-x', `${x * strength}px`);
-        buttonRef.current.style.setProperty('--btn-y', `${y * strength}px`);
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+
+        buttonRef.current.style.setProperty('--btn-x', `${x * 0.2}px`);
+        buttonRef.current.style.setProperty('--btn-y', `${y * 0.2}px`);
     };
 
     const resetMagnetic = () => {
@@ -95,11 +103,12 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, darkMode, showNotificati
             triggerSuccessState();
         } catch (error) {
             const errorMessage = error.response?.data || 'Registration failed';
-            if (errorMessage.toLowerCase().includes('exists')) {
-                showNotification('User Already Exists', 'error');
-            } else {
-                showNotification(errorMessage, 'error');
-            }
+            showNotification(
+                errorMessage.toLowerCase().includes('exists')
+                    ? 'User already exists'
+                    : errorMessage,
+                'error'
+            );
             triggerErrorAnimation();
         } finally {
             setLoading(false);
@@ -123,31 +132,24 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, darkMode, showNotificati
             onMouseLeave={resetParallax}
             className={`auth-page auth-page--register auth-motion min-h-screen flex overflow-hidden tone-${validityTone}`}
         >
+            {/* BACKGROUND */}
             <div className="auth-canvas" aria-hidden="true">
                 <div className="parallax-layer layer-back" />
                 <div className="parallax-layer layer-mid" />
                 <div className="parallax-layer layer-front" />
             </div>
+
             {/* LEFT — REGISTER FORM */}
             <div className="auth-surface w-full flex items-center justify-center px-8 sm:px-10">
-                <div className={`login-card auth-card w-full max-w-md ${formError ? 'shake-error' : ''}`}>
-                    <div className="mb-8">
-                        <span className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-1 text-xs uppercase tracking-[0.2em] text-sky-200/80">
-                            Create Access
-                        </span>
-                    </div>
-                    <h1 className="text-4xl font-semibold text-white mb-3 tracking-tight">
-                        Create account
-                    </h1>
-                    <p className="text-sm text-white/70 mb-10 leading-relaxed">
+                <div className={`auth-card w-full max-w-md ${formError ? 'shake-error' : ''}`}>
+                    <h1 className="text-4xl font-semibold mb-3">Create account</h1>
+                    <p className="text-sm text-muted mb-10">
                         Start organizing your work in one place.
                     </p>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Username */}
-                        <div className="floating-field stagger-item" style={{ animationDelay: '80ms' }}>
+                        <div className="floating-field">
                             <input
-                                id="register-username"
                                 type="text"
                                 placeholder=" "
                                 value={formData.username}
@@ -155,17 +157,13 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, darkMode, showNotificati
                                     setFormData({ ...formData, username: e.target.value })
                                 }
                                 disabled={loading}
-                                className="floating-input floating-input--dark"
+                                className="floating-input"
                             />
-                            <label htmlFor="register-username" className="floating-label floating-label--dark">
-                                Username
-                            </label>
+                            <label className="floating-label">Username</label>
                         </div>
 
-                        {/* Email */}
-                        <div className="floating-field stagger-item" style={{ animationDelay: '160ms' }}>
+                        <div className="floating-field">
                             <input
-                                id="register-email"
                                 type="email"
                                 placeholder=" "
                                 value={formData.email}
@@ -173,18 +171,14 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, darkMode, showNotificati
                                     setFormData({ ...formData, email: e.target.value })
                                 }
                                 disabled={loading}
-                                className="floating-input floating-input--dark"
+                                className="floating-input"
                             />
-                            <label htmlFor="register-email" className="floating-label floating-label--dark">
-                                Email
-                            </label>
+                            <label className="floating-label">Email</label>
                         </div>
 
-                        {/* Password */}
                         <div className="relative">
-                            <div className="floating-field stagger-item" style={{ animationDelay: '240ms' }}>
+                            <div className="floating-field">
                                 <input
-                                    id="register-password"
                                     type={showPassword ? 'text' : 'password'}
                                     placeholder=" "
                                     value={formData.password}
@@ -192,32 +186,27 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, darkMode, showNotificati
                                         setFormData({ ...formData, password: e.target.value })
                                     }
                                     disabled={loading}
-                                    className="floating-input floating-input--dark pr-16"
+                                    className="floating-input pr-16"
                                 />
-                                <label htmlFor="register-password" className="floating-label floating-label--dark">
-                                    Password
-                                </label>
+                                <label className="floating-label">Password</label>
                             </div>
 
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-6 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition"
+                                className="password-toggle"
                                 tabIndex={-1}
-                                aria-label="Toggle password visibility"
                             >
                                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
                         </div>
 
-                        <div className="password-meter stagger-item" style={{ animationDelay: '320ms' }}>
-                            <div className="flex items-center justify-between text-xs text-white/60 mb-2">
+                        <div className="password-meter">
+                            <div className="flex justify-between text-xs mb-2">
                                 <span>Password strength</span>
-                                <span className="font-semibold text-white/80">
-                                    {passwordLabel}
-                                </span>
+                                <span className="font-semibold">{passwordLabel}</span>
                             </div>
-                            <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
+                            <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
                                 <div
                                     className="h-full rounded-full bg-gradient-to-r from-red-400 via-amber-400 to-emerald-400 transition-[width] duration-500"
                                     style={{ width: `${passwordScore}%` }}
@@ -231,27 +220,22 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, darkMode, showNotificati
                             onMouseLeave={resetMagnetic}
                             type="submit"
                             disabled={loading}
-                            className="btn-primary btn-primary--dark w-full py-4 rounded-full font-semibold shadow-lg disabled:opacity-50 magnetic-button"
+                            className="btn-primary magnetic-button"
                         >
                             {loading ? 'Creating account…' : showSuccess ? 'Success!' : 'Create account'}
                         </button>
                     </form>
 
                     {showSuccess && (
-                        <div className="success-message success-message--dark mt-6">
-                            <div className="success-check">
-                                ✓
-                            </div>
-                            <p>Account created. Redirecting you to login…</p>
+                        <div className="success-message mt-6">
+                            <div className="success-check">✓</div>
+                            <p>Account created. Redirecting to login…</p>
                         </div>
                     )}
 
-                    <p className="mt-8 text-center text-white/60 text-sm">
+                    <p className="mt-8 text-center text-sm">
                         Already have an account?{' '}
-                        <button
-                            onClick={onSwitchToLogin}
-                            className="font-semibold text-white hover:text-sky-200 hover:underline"
-                        >
+                        <button onClick={onSwitchToLogin} className="link">
                             Sign in
                         </button>
                     </p>
