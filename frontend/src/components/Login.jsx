@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { authService } from '../services/authService';
 
-const Login = ({ onLoginSuccess, onSwitchToRegister, darkMode, showNotification }) => {
+const Login = ({ onLoginSuccess, onSwitchToRegister, showNotification }) => {
     const [formData, setFormData] = useState({ username: '', password: '' });
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -20,8 +20,9 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, darkMode, showNotification 
         if (!formData.username && !formData.password) return 'neutral';
         if (formData.username && formData.password.length >= 6) return 'valid';
         return 'warn';
-    }, [formData]);
+    }, [formData.username, formData.password]);
 
+    /* ------------------ PARALLAX ------------------ */
     const handleParallax = (e) => {
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         if (!containerRef.current) return;
@@ -40,6 +41,7 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, darkMode, showNotification 
         containerRef.current.style.setProperty('--my', '0');
     };
 
+    /* ------------------ MAGNETIC BUTTON ------------------ */
     const handleMagneticMove = (e) => {
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         if (!buttonRef.current) return;
@@ -58,6 +60,7 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, darkMode, showNotification 
         buttonRef.current.style.setProperty('--btn-y', '0px');
     };
 
+    /* ------------------ SUBMIT ------------------ */
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -88,24 +91,32 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, darkMode, showNotification 
             ref={containerRef}
             onMouseMove={handleParallax}
             onMouseLeave={resetParallax}
-            className={`auth-page auth-page--login auth-motion min-h-screen flex overflow-hidden tone-${validityTone}`}
+            className={`auth-page auth-motion min-h-screen flex overflow-hidden tone-${validityTone}`}
         >
             {/* BACKGROUND */}
             <div className="auth-canvas" aria-hidden="true">
                 <div className="parallax-layer layer-back" />
                 <div className="parallax-layer layer-mid" />
                 <div className="parallax-layer layer-front" />
+
+                <div className="absolute -top-20 -right-10 h-72 w-72 rounded-full bg-emerald-400/30 blur-3xl animate-float-slow" />
+                <div className="absolute bottom-[-120px] left-10 h-96 w-96 rounded-full bg-sky-400/30 blur-3xl animate-float-medium" />
+                <div className="absolute top-1/3 left-1/2 h-52 w-52 rounded-full bg-indigo-400/20 blur-2xl animate-float-fast" />
             </div>
 
-            {/* LEFT — LOGIN FORM */}
+            {/* LOGIN CARD */}
             <div className="auth-surface w-full flex items-center justify-center px-8 sm:px-10">
-                <div className={`login-card auth-card w-full max-w-md ${formError ? 'shake-error' : ''}`}>
+                <div className={`auth-card w-full max-w-md ${formError ? 'shake-error' : ''}`}>
                     <div className="mb-8">
-                        <span className="badge">Secure Login</span>
+                        <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-1 text-xs uppercase tracking-widest text-emerald-200">
+                            Secure Login
+                        </span>
                     </div>
 
-                    <h1 className="text-4xl font-semibold mb-3">Welcome back</h1>
-                    <p className="text-sm text-muted mb-10">
+                    <h1 className="text-4xl font-semibold text-white mb-3">
+                        Welcome back
+                    </h1>
+                    <p className="text-sm text-slate-200 mb-10">
                         Focus. Organize. Get things done.
                     </p>
 
@@ -113,6 +124,7 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, darkMode, showNotification 
                         {/* Username */}
                         <div className="floating-field">
                             <input
+                                id="login-username"
                                 type="text"
                                 placeholder=" "
                                 value={formData.username}
@@ -120,15 +132,18 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, darkMode, showNotification 
                                     setFormData({ ...formData, username: e.target.value })
                                 }
                                 disabled={loading}
-                                className="floating-input"
+                                className="floating-input floating-input--dark"
                             />
-                            <label className="floating-label">Username</label>
+                            <label htmlFor="login-username" className="floating-label floating-label--dark">
+                                Username
+                            </label>
                         </div>
 
                         {/* Password */}
                         <div className="relative">
                             <div className="floating-field">
                                 <input
+                                    id="login-password"
                                     type={showPassword ? 'text' : 'password'}
                                     placeholder=" "
                                     value={formData.password}
@@ -136,15 +151,17 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, darkMode, showNotification 
                                         setFormData({ ...formData, password: e.target.value })
                                     }
                                     disabled={loading}
-                                    className="floating-input pr-16"
+                                    className="floating-input floating-input--dark pr-16"
                                 />
-                                <label className="floating-label">Password</label>
+                                <label htmlFor="login-password" className="floating-label floating-label--dark">
+                                    Password
+                                </label>
                             </div>
 
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="password-toggle"
+                                className="absolute right-6 top-1/2 -translate-y-1/2 text-white/60 hover:text-white"
                                 tabIndex={-1}
                             >
                                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -157,15 +174,20 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, darkMode, showNotification 
                             onMouseLeave={resetMagnetic}
                             type="submit"
                             disabled={loading}
-                            className="btn-primary magnetic-button"
+                            className="magnetic-button w-full py-4 rounded-full font-semibold shadow-lg disabled:opacity-50"
+                            style={{ background: 'linear-gradient(120deg, #34d399, #38bdf8)' }}
                         >
                             {loading ? 'Signing in…' : 'Login'}
                         </button>
                     </form>
 
-                    <p className="mt-8 text-center text-sm">
+                    <p className="mt-8 text-center text-slate-200 text-sm">
                         Not a member?{' '}
-                        <button onClick={onSwitchToRegister} className="link">
+                        <button
+                            type="button"
+                            onClick={onSwitchToRegister}
+                            className="font-semibold text-white hover:text-emerald-200 hover:underline"
+                        >
                             Register now
                         </button>
                     </p>
