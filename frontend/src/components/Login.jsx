@@ -11,11 +11,13 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, showNotification }) => {
     const containerRef = useRef(null);
     const buttonRef = useRef(null);
 
+    /* ------------------ ERROR ANIMATION ------------------ */
     const triggerErrorAnimation = () => {
         setFormError(true);
         setTimeout(() => setFormError(false), 700);
     };
 
+    /* ------------------ VALIDITY TONE ------------------ */
     const validityTone = useMemo(() => {
         if (!formData.username && !formData.password) return 'neutral';
         if (formData.username && formData.password.length >= 6) return 'valid';
@@ -134,7 +136,10 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, showNotification }) => {
                                 disabled={loading}
                                 className="floating-input floating-input--dark"
                             />
-                            <label htmlFor="login-username" className="floating-label floating-label--dark">
+                            <label
+                                htmlFor="login-username"
+                                className="floating-label floating-label--dark"
+                            >
                                 Username
                             </label>
                         </div>
@@ -153,7 +158,10 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, showNotification }) => {
                                     disabled={loading}
                                     className="floating-input floating-input--dark pr-16"
                                 />
-                                <label htmlFor="login-password" className="floating-label floating-label--dark">
+                                <label
+                                    htmlFor="login-password"
+                                    className="floating-label floating-label--dark"
+                                >
                                     Password
                                 </label>
                             </div>

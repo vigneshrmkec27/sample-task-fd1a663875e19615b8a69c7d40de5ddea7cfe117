@@ -79,7 +79,7 @@ body {
 }
 
 /* --------------------------------------------------
-   Animations
+   Key Animations
 -------------------------------------------------- */
 
 @keyframes fadeUp {
@@ -130,12 +130,16 @@ body {
     50% { transform: translate(25px,-15px); }
 }
 
+/* --------------------------------------------------
+   Animation Helpers
+-------------------------------------------------- */
+
 .animate-float-slow { animation: floatSlow 12s ease-in-out infinite; }
 .animate-float-medium { animation: floatMedium 10s ease-in-out infinite; }
 .animate-float-fast { animation: floatFast 8s ease-in-out infinite; }
 
 /* --------------------------------------------------
-   Auth Motion + Background
+   Auth Motion + Parallax
 -------------------------------------------------- */
 
 .auth-motion {
@@ -242,24 +246,8 @@ body {
    Buttons
 -------------------------------------------------- */
 
-.btn-primary {
-    background: linear-gradient(120deg, #0f172a, #10b981);
-    color: #fff;
-    border-radius: 999px;
-    padding: 1rem;
-    font-weight: 600;
-}
-
-.btn-primary:hover {
-    transform: translateY(-1px) scale(1.02);
-    box-shadow: 0 12px 30px rgba(16,185,129,.35);
-}
-
 .magnetic-button {
-    transform: translate(
-        var(--btn-x, 0px),
-        var(--btn-y, 0px)
-    );
+    transform: translate(var(--btn-x,0px), var(--btn-y,0px));
     transition: transform 120ms ease;
 }
 

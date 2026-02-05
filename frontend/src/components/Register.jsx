@@ -16,6 +16,7 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, showNotification }) => {
     const containerRef = useRef(null);
     const buttonRef = useRef(null);
 
+    /* ------------------ ERROR + SUCCESS ------------------ */
     const triggerErrorAnimation = () => {
         setFormError(true);
         setTimeout(() => setFormError(false), 700);
@@ -29,6 +30,7 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, showNotification }) => {
         }, 900);
     };
 
+    /* ------------------ VALIDITY TONE ------------------ */
     const validityTone = useMemo(() => {
         if (!formData.username && !formData.email && !formData.password) return 'neutral';
         if (
@@ -133,7 +135,7 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, showNotification }) => {
             ref={containerRef}
             onMouseMove={handleParallax}
             onMouseLeave={resetParallax}
-            className={`auth-page auth-page--register auth-motion min-h-screen flex overflow-hidden tone-${validityTone}`}
+            className={`auth-page auth-motion min-h-screen flex overflow-hidden tone-${validityTone}`}
         >
             {/* BACKGROUND */}
             <div className="auth-canvas" aria-hidden="true">
