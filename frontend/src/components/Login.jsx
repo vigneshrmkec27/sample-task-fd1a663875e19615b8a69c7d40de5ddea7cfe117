@@ -6,12 +6,19 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, darkMode, showNotification 
     const [formData, setFormData] = useState({ username: '', password: '' });
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [formError, setFormError] = useState(false);
+
+    const triggerErrorAnimation = () => {
+        setFormError(true);
+        window.setTimeout(() => setFormError(false), 700);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!formData.username || !formData.password) {
             showNotification('Please fill in all fields', 'error');
+            triggerErrorAnimation();
             return;
         }
 
@@ -25,53 +32,76 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, darkMode, showNotification 
             onLoginSuccess(response);
         } catch (error) {
             showNotification(error.response?.data || 'Invalid credentials', 'error');
+            triggerErrorAnimation();
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex overflow-hidden">
+        <div className="auth-page auth-page--login min-h-screen flex overflow-hidden">
+            <div className="auth-background" aria-hidden="true">
+                <div className="auth-gradient-orb orb-one" />
+                <div className="auth-gradient-orb orb-two" />
+                <div className="auth-gradient-orb orb-three" />
+            </div>
             {/* LEFT — FORM */}
-            <div className="w-full lg:w-[40%] flex items-center justify-center px-10 bg-white dark:bg-gray-900 z-10">
-                <div className="w-full max-w-md animate-in fade-in zoom-in-95">
-                    <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">
+            <div className="w-full lg:w-[42%] flex items-center justify-center px-10 bg-slate-950/95 text-white z-10">
+                <div className={`login-card w-full max-w-md ${formError ? 'shake-error' : ''}`}>
+                    <div className="mb-8">
+                        <span className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-1 text-xs uppercase tracking-[0.2em] text-emerald-200/80">
+                            Secure Login
+                        </span>
+                    </div>
+                    <h1 className="text-4xl font-semibold text-white mb-3 tracking-tight">
                         Welcome back
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mb-10">
+                    <p className="text-sm text-white/70 mb-10 leading-relaxed">
                         Focus. Organize. Get things done.
                     </p>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Username */}
-                        <input
-                            type="text"
-                            placeholder="Username"
-                            value={formData.username}
-                            onChange={(e) =>
-                                setFormData({ ...formData, username: e.target.value })
-                            }
-                            disabled={loading}
-                            className="w-full px-6 py-4 rounded-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-black transition shadow-sm"
-                        />
+                        <div className="floating-field">
+                            <input
+                                id="login-username"
+                                type="text"
+                                placeholder=" "
+                                value={formData.username}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, username: e.target.value })
+                                }
+                                disabled={loading}
+                                className="floating-input floating-input--dark"
+                            />
+                            <label htmlFor="login-username" className="floating-label floating-label--dark">
+                                Username
+                            </label>
+                        </div>
 
                         {/* Password */}
                         <div className="relative">
-                            <input
-                                type={showPassword ? 'text' : 'password'}
-                                placeholder="Password"
-                                value={formData.password}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, password: e.target.value })
-                                }
-                                disabled={loading}
-                                className="w-full px-6 py-4 pr-16 rounded-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-black transition shadow-sm"
-                            />
+                            <div className="floating-field">
+                                <input
+                                    id="login-password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    placeholder=" "
+                                    value={formData.password}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, password: e.target.value })
+                                    }
+                                    disabled={loading}
+                                    className="floating-input floating-input--dark pr-16"
+                                />
+                                <label htmlFor="login-password" className="floating-label floating-label--dark">
+                                    Password
+                                </label>
+                            </div>
 
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition"
+                                className="absolute right-6 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition"
                                 tabIndex={-1}
                                 aria-label="Toggle password visibility"
                             >
@@ -79,24 +109,24 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, darkMode, showNotification 
                             </button>
                         </div>
 
-                        <div className="text-right text-sm text-gray-500 hover:underline cursor-pointer">
+                        <div className="text-right text-sm text-white/60 hover:text-white hover:underline cursor-pointer">
                             Forgot Password?
                         </div>
 
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-black text-white py-4 rounded-full font-semibold shadow-lg hover:scale-[0.98] transition-all disabled:opacity-50"
+                            className="btn-primary btn-primary--dark w-full py-4 rounded-full font-semibold shadow-lg disabled:opacity-50"
                         >
                             {loading ? 'Signing in…' : 'Login'}
                         </button>
                     </form>
 
-                    <p className="mt-8 text-center text-gray-500 text-sm">
+                    <p className="mt-8 text-center text-white/60 text-sm">
                         Not a member?{' '}
                         <button
                             onClick={onSwitchToRegister}
-                            className="font-semibold text-black dark:text-white hover:underline"
+                            className="font-semibold text-white hover:text-emerald-200 hover:underline"
                         >
                             Register now
                         </button>
@@ -105,12 +135,12 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, darkMode, showNotification 
             </div>
 
             {/* RIGHT — PREMIUM ABSTRACT PANEL */}
-            <div className="hidden lg:flex w-[60%] relative items-center justify-center bg-[#F5FBF7] dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 overflow-hidden">
+            <div className="hidden lg:flex w-[60%] relative items-center justify-center bg-[#F5FBF7]/70 dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 overflow-hidden">
 
                 {/* Animated gradient blobs */}
-                <div className="absolute w-[500px] h-[500px] bg-emerald-300/40 rounded-full blur-[120px] top-[-120px] left-[-120px] animate-pulse" />
-                <div className="absolute w-[420px] h-[420px] bg-lime-300/40 rounded-full blur-[120px] bottom-[-120px] right-[-120px] animate-pulse delay-1000" />
-                <div className="absolute w-[300px] h-[300px] bg-green-300/40 rounded-full blur-[100px] top-1/3 right-1/4 animate-pulse delay-500" />
+                <div className="absolute w-[500px] h-[500px] bg-emerald-300/40 rounded-full blur-[120px] top-[-120px] left-[-120px] animate-float-slow" />
+                <div className="absolute w-[420px] h-[420px] bg-lime-300/40 rounded-full blur-[120px] bottom-[-120px] right-[-120px] animate-float-medium" />
+                <div className="absolute w-[300px] h-[300px] bg-green-300/40 rounded-full blur-[100px] top-1/3 right-1/4 animate-float-fast" />
 
                 {/* Content */}
                 <div className="relative z-10 max-w-lg text-center px-12">
