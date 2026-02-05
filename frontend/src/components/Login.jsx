@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { authService } from '../services/authService';
 
@@ -6,12 +6,60 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, darkMode, showNotification 
     const [formData, setFormData] = useState({ username: '', password: '' });
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [formError, setFormError] = useState(false);
+    const containerRef = useRef(null);
+    const buttonRef = useRef(null);
+
+    const triggerErrorAnimation = () => {
+        setFormError(true);
+        window.setTimeout(() => setFormError(false), 700);
+    };
+
+    const validityTone = useMemo(() => {
+        if (!formData.username && !formData.password) return 'neutral';
+        if (formData.username && formData.password.length >= 6) return 'valid';
+        return 'warn';
+    }, [formData.password, formData.username]);
+
+    const handleParallax = (event) => {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        if (!containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        const x = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
+        const y = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
+        containerRef.current.style.setProperty('--mx', x.toFixed(3));
+        containerRef.current.style.setProperty('--my', y.toFixed(3));
+    };
+
+    const resetParallax = () => {
+        if (!containerRef.current) return;
+        containerRef.current.style.setProperty('--mx', '0');
+        containerRef.current.style.setProperty('--my', '0');
+    };
+
+    const handleMagneticMove = (event) => {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        if (!buttonRef.current) return;
+        const rect = buttonRef.current.getBoundingClientRect();
+        const x = event.clientX - rect.left - rect.width / 2;
+        const y = event.clientY - rect.top - rect.height / 2;
+        const strength = 0.2;
+        buttonRef.current.style.setProperty('--btn-x', `${x * strength}px`);
+        buttonRef.current.style.setProperty('--btn-y', `${y * strength}px`);
+    };
+
+    const resetMagnetic = () => {
+        if (!buttonRef.current) return;
+        buttonRef.current.style.setProperty('--btn-x', '0px');
+        buttonRef.current.style.setProperty('--btn-y', '0px');
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!formData.username || !formData.password) {
             showNotification('Please fill in all fields', 'error');
+            triggerErrorAnimation();
             return;
         }
 
@@ -25,53 +73,84 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, darkMode, showNotification 
             onLoginSuccess(response);
         } catch (error) {
             showNotification(error.response?.data || 'Invalid credentials', 'error');
+            triggerErrorAnimation();
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex overflow-hidden">
+        <div
+            ref={containerRef}
+            onMouseMove={handleParallax}
+            onMouseLeave={resetParallax}
+            className={`auth-page auth-page--login auth-motion min-h-screen flex overflow-hidden tone-${validityTone}`}
+        >
+            <div className="auth-canvas" aria-hidden="true">
+                <div className="parallax-layer layer-back" />
+                <div className="parallax-layer layer-mid" />
+                <div className="parallax-layer layer-front" />
+                <div className="absolute -top-20 -right-10 h-72 w-72 rounded-full bg-emerald-400/30 blur-3xl animate-float-slow" />
+                <div className="absolute bottom-[-120px] left-10 h-96 w-96 rounded-full bg-sky-400/30 blur-3xl animate-float-medium" />
+                <div className="absolute top-1/3 left-1/2 h-52 w-52 rounded-full bg-indigo-400/20 blur-2xl animate-float-fast" />
+            </div>
             {/* LEFT — FORM */}
-            <div className="w-full lg:w-[40%] flex items-center justify-center px-10 bg-white dark:bg-gray-900 z-10">
-                <div className="w-full max-w-md animate-in fade-in zoom-in-95">
-                    <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">
+            <div className="auth-surface w-full flex items-center justify-center px-8 sm:px-10">
+                <div className={`login-card auth-card w-full max-w-md ${formError ? 'shake-error' : ''}`}>
+                    <div className="mb-8">
+                        <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-1 text-xs uppercase tracking-[0.2em] text-emerald-200/90 animate-fadeIn">
+                            Secure Login
+                        </span>
+                    </div>
+                    <h1 className="text-4xl sm:text-5xl font-semibold text-white mb-3 tracking-tight animate-fadeIn">
                         Welcome back
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mb-10">
+                    <p className="text-sm sm:text-base text-slate-200/90 mb-10 leading-relaxed animate-fadeIn">
                         Focus. Organize. Get things done.
                     </p>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Username */}
-                        <input
-                            type="text"
-                            placeholder="Username"
-                            value={formData.username}
-                            onChange={(e) =>
-                                setFormData({ ...formData, username: e.target.value })
-                            }
-                            disabled={loading}
-                            className="w-full px-6 py-4 rounded-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-black transition shadow-sm"
-                        />
+                        <div className="floating-field">
+                            <input
+                                id="login-username"
+                                type="text"
+                                placeholder=" "
+                                value={formData.username}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, username: e.target.value })
+                                }
+                                disabled={loading}
+                                className="floating-input floating-input--dark"
+                            />
+                            <label htmlFor="login-username" className="floating-label floating-label--dark">
+                                Username
+                            </label>
+                        </div>
 
                         {/* Password */}
                         <div className="relative">
-                            <input
-                                type={showPassword ? 'text' : 'password'}
-                                placeholder="Password"
-                                value={formData.password}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, password: e.target.value })
-                                }
-                                disabled={loading}
-                                className="w-full px-6 py-4 pr-16 rounded-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-black transition shadow-sm"
-                            />
+                            <div className="floating-field">
+                                <input
+                                    id="login-password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    placeholder=" "
+                                    value={formData.password}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, password: e.target.value })
+                                    }
+                                    disabled={loading}
+                                    className="floating-input floating-input--dark pr-16"
+                                />
+                                <label htmlFor="login-password" className="floating-label floating-label--dark">
+                                    Password
+                                </label>
+                            </div>
 
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition"
+                                className="absolute right-6 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition"
                                 tabIndex={-1}
                                 aria-label="Toggle password visibility"
                             >
@@ -79,73 +158,35 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, darkMode, showNotification 
                             </button>
                         </div>
 
-                        <div className="text-right text-sm text-gray-500 hover:underline cursor-pointer">
+                        <div className="text-right text-sm text-slate-200/80 hover:text-white hover:underline cursor-pointer">
                             Forgot Password?
                         </div>
 
                         <button
+                            ref={buttonRef}
+                            onMouseMove={handleMagneticMove}
+                            onMouseLeave={resetMagnetic}
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-black text-white py-4 rounded-full font-semibold shadow-lg hover:scale-[0.98] transition-all disabled:opacity-50"
+                            className="btn-primary btn-primary--dark w-full py-4 rounded-full font-semibold shadow-lg disabled:opacity-50 magnetic-button"
+                            style={{ background: 'linear-gradient(120deg, #34d399, #38bdf8)' }}
                         >
                             {loading ? 'Signing in…' : 'Login'}
                         </button>
                     </form>
 
-                    <p className="mt-8 text-center text-gray-500 text-sm">
+                    <p className="mt-8 text-center text-slate-200/80 text-sm">
                         Not a member?{' '}
                         <button
-                            onClick={onSwitchToRegister}
-                            className="font-semibold text-black dark:text-white hover:underline"
+                            type="button"
+                            onClick={(event) => {
+                                event.preventDefault();
+                                onSwitchToRegister();
+                            }}
+                            className="font-semibold text-white hover:text-emerald-200 hover:underline"
                         >
                             Register now
                         </button>
-                    </p>
-                </div>
-            </div>
-
-            {/* RIGHT — PREMIUM ABSTRACT PANEL */}
-            <div className="hidden lg:flex w-[60%] relative items-center justify-center bg-[#F5FBF7] dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 overflow-hidden">
-
-                {/* Animated gradient blobs */}
-                <div className="absolute w-[500px] h-[500px] bg-emerald-300/40 rounded-full blur-[120px] top-[-120px] left-[-120px] animate-pulse" />
-                <div className="absolute w-[420px] h-[420px] bg-lime-300/40 rounded-full blur-[120px] bottom-[-120px] right-[-120px] animate-pulse delay-1000" />
-                <div className="absolute w-[300px] h-[300px] bg-green-300/40 rounded-full blur-[100px] top-1/3 right-1/4 animate-pulse delay-500" />
-
-                {/* Content */}
-                <div className="relative z-10 max-w-lg text-center px-12">
-                    {/* Glass Card */}
-                    <div className="backdrop-blur-2xl bg-white/70 dark:bg-gray-900/60 rounded-3xl shadow-2xl p-10 mb-12 border border-white/40 dark:border-gray-700">
-                        <div className="flex items-center justify-center gap-4 mb-8">
-                            <div className="w-14 h-14 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xl font-bold">
-                                ✓
-                            </div>
-                            <div className="text-left">
-                                <p className="font-semibold text-gray-900 dark:text-white text-lg">
-                                    Productivity
-                                </p>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    Tasks in sync
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Progress */}
-                        <div className="relative w-28 h-28 mx-auto">
-                            <div className="absolute inset-0 rounded-full border-[10px] border-emerald-200 dark:border-emerald-900"></div>
-                            <div className="absolute inset-0 rounded-full border-[10px] border-emerald-500 border-t-transparent rotate-[120deg]"></div>
-                            <div className="absolute inset-0 flex items-center justify-center text-xl font-bold text-emerald-600">
-                                84%
-                            </div>
-                        </div>
-                    </div>
-
-                    <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-3">
-                        Make your work effortless
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                        Organize tasks, track progress, and stay focused with a clean,
-                        distraction-free experience.
                     </p>
                 </div>
             </div>
