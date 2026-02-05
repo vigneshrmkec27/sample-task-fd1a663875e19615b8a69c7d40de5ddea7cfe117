@@ -120,6 +120,7 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, showNotification }) => {
         }
     };
 
+    /* ------------------ PASSWORD STRENGTH ------------------ */
     const passwordScore = Math.min(100, (formData.password.length / 12) * 100);
     const passwordLabel =
         formData.password.length === 0
@@ -178,7 +179,10 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, showNotification }) => {
                                 disabled={loading}
                                 className="floating-input floating-input--dark"
                             />
-                            <label htmlFor="register-username" className="floating-label floating-label--dark">
+                            <label
+                                htmlFor="register-username"
+                                className="floating-label floating-label--dark"
+                            >
                                 Username
                             </label>
                         </div>
@@ -196,7 +200,10 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, showNotification }) => {
                                 disabled={loading}
                                 className="floating-input floating-input--dark"
                             />
-                            <label htmlFor="register-email" className="floating-label floating-label--dark">
+                            <label
+                                htmlFor="register-email"
+                                className="floating-label floating-label--dark"
+                            >
                                 Email
                             </label>
                         </div>
@@ -215,7 +222,10 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, showNotification }) => {
                                     disabled={loading}
                                     className="floating-input floating-input--dark pr-16"
                                 />
-                                <label htmlFor="register-password" className="floating-label floating-label--dark">
+                                <label
+                                    htmlFor="register-password"
+                                    className="floating-label floating-label--dark"
+                                >
                                     Password
                                 </label>
                             </div>
@@ -251,7 +261,9 @@ const Register = ({ onRegisterSuccess, onSwitchToLogin, showNotification }) => {
                             type="submit"
                             disabled={loading}
                             className="magnetic-button w-full py-4 rounded-full font-semibold shadow-lg disabled:opacity-50"
-                            style={{ background: 'linear-gradient(120deg, #38bdf8, #6366f1)' }}
+                            style={{
+                                background: 'linear-gradient(120deg, #38bdf8, #6366f1)',
+                            }}
                         >
                             {loading ? 'Creating account…' : showSuccess ? 'Success!' : 'Create account'}
                         </button>

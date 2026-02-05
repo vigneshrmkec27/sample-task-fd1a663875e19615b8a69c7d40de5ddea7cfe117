@@ -126,12 +126,22 @@ body {
 }
 
 @keyframes orbDrift {
-    0%,100% { transform: translate(0); }
-    50% { transform: translate(25px,-15px); }
+    0%,100% { transform: translate3d(0,0,0); }
+    50% { transform: translate3d(25px,-15px,0); }
+}
+
+@keyframes gradientShift {
+    0%,100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes authPulse {
+    0%,100% { box-shadow: 0 30px 80px rgba(15,23,42,.6); }
+    50% { box-shadow: 0 40px 90px rgba(15,23,42,.75); }
 }
 
 /* --------------------------------------------------
-   Animation Helpers
+   Animation Utilities
 -------------------------------------------------- */
 
 .animate-float-slow { animation: floatSlow 12s ease-in-out infinite; }
@@ -149,6 +159,8 @@ body {
         radial-gradient(circle at 20% 20%, rgba(16,185,129,.25), transparent 45%),
         radial-gradient(circle at 80% 10%, rgba(59,130,246,.2), transparent 50%),
         linear-gradient(135deg, rgba(2,6,23,.98), rgba(15,23,42,.96));
+    background-size: 200% 200%;
+    animation: gradientShift 16s ease infinite;
 }
 
 .auth-motion.tone-valid {
@@ -191,11 +203,16 @@ body {
 }
 
 .auth-card {
+    position: relative;
     background: rgba(2,6,23,.82);
     border-radius: 28px;
     padding: 2.5rem;
     border: 1px solid rgba(148,163,184,.2);
     box-shadow: 0 30px 80px rgba(15,23,42,.6);
+    animation: authPulse 6s ease-in-out infinite;
+}
+
+.login-card {
     animation: authCardIn 700ms cubic-bezier(.2,.8,.2,1);
 }
 
@@ -215,7 +232,7 @@ body {
     width: 100%;
     padding: 1rem 1.5rem;
     border-radius: 999px;
-    background: rgba(2,6,23,.6);
+    background: rgba(15,23,42,.7);
     border: 1px solid rgba(148,163,184,.25);
     color: #f8fafc;
 }
@@ -224,6 +241,7 @@ body {
     border-color: #6366f1;
     box-shadow: 0 0 0 4px rgba(99,102,241,.2);
     animation: inputPulse 1.6s ease-in-out;
+    outline: none;
 }
 
 .floating-label {
@@ -234,6 +252,7 @@ body {
     font-size: .85rem;
     color: rgba(226,232,240,.7);
     pointer-events: none;
+    transition: transform 200ms ease, color 200ms ease;
 }
 
 .floating-input:focus + .floating-label,

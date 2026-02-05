@@ -176,6 +176,7 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, showNotification }) => {
                             </button>
                         </div>
 
+                        {/* Submit */}
                         <button
                             ref={buttonRef}
                             onMouseMove={handleMagneticMove}
@@ -183,7 +184,9 @@ const Login = ({ onLoginSuccess, onSwitchToRegister, showNotification }) => {
                             type="submit"
                             disabled={loading}
                             className="magnetic-button w-full py-4 rounded-full font-semibold shadow-lg disabled:opacity-50"
-                            style={{ background: 'linear-gradient(120deg, #34d399, #38bdf8)' }}
+                            style={{
+                                background: 'linear-gradient(120deg, #34d399, #38bdf8)',
+                            }}
                         >
                             {loading ? 'Signing in…' : 'Login'}
                         </button>
