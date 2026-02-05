@@ -1,0 +1,22 @@
+{
+  "name": "task-management-system",
+  "version": "1.0.0",
+  "description": "Full-stack Task Management Application",
+  "scripts": {
+    "prestart": "node -e \"if (!require('fs').existsSync('./frontend/package.json')) { console.error('ERROR: frontend/package.json is missing!'); process.exit(1); }\"",
+    "start": "concurrently --kill-others-on-fail --prefix \"[{name}]\" --names \"BACKEND,FRONTEND\" --prefix-colors \"blue,green\" \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:backend": "cd backend && (if exist mvnw.cmd (mvnw.cmd spring-boot:run) else (mvn spring-boot:run))",
+    "start:frontend": "wait-on http://localhost:8080/actuator/health -t 60000 && cd frontend && npm run dev",
+    "install:all": "npm install && cd frontend && npm install",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd backend && (if exist mvnw.cmd (mvnw.cmd clean package -DskipTests) else (mvn clean package -DskipTests))",
+    "build:frontend": "cd frontend && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "wait-on": "^7.2.0"
+  },
+  "dependencies": {
+    "framer-motion": "^12.26.2"
+  }
+}
